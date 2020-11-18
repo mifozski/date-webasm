@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function toFloatArr(arr) {
+            const res = new Uint32Array(arr.length); // 3
+            for (let i=0; i < arr.length; i++)
+                res[i] = arr[i];
+            return res;
+        }
+
+        setTimeout(() => {
+            const arr = new Array(100000);
+            for (let i=0; i < 100000; i++) {
+                arr[i] = 1599937072 + i * 1000000;
+            }
+
+            const floatArray = toFloatArr(arr);
+            const heapSpace = Module._malloc(floatArray.length * floatArray.BYTES_PER_ELEMENT);
+
+            Module.HEAP32.set(floatArray, heapSpace >> 2);
+
+            const mark = Date.now();
+            // const res = Module.__Z20getYearAndMonthArrayPii(heapSpace, floatArray.length);
+            console.log(`took ${Date.now() - mark} ms`);
+
+
+            const res2 = Module._getStartOfMonthArray(heapSpace, floatArray.length);
+            console.log(`took ${Date.now() - mark} ms`);
+            console.log(res2);
+
+            const typedArray = new Int8Array(2);
+            for (let v = 0; v < 20; v++) {
+                // console.log(Module['HEAP32'][res / Int32Array.BYTES_PER_ELEMENT + v])
+                console.log(Module['HEAPU32'][res2 / Uint32Array.BYTES_PER_ELEMENT + v])
+                console.log('----------------------------')
+            }
+            Module._free(heapSpace);
+        }, 3000);
+    </script>
+    <script async type="text/javascript" src="YearMonth.js"></script>
+</body>
+</html>
